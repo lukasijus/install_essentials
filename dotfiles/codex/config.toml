@@ -1,0 +1,18 @@
+suppress_unstable_features_warning = true
+
+[tui]
+theme = "github"
+
+[plugins."gmail@openai-curated"]
+enabled = true
+
+[plugins."hugging-face@openai-curated"]
+enabled = true
+
+[plugins."github@openai-curated"]
+enabled = true
+
+[features]
+terminal_resize_reflow = true
+memories = true
+goals = true

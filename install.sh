@@ -84,7 +84,7 @@ install_node() {
   . "$NVM_DIR/nvm.sh"
   nvm install --lts
   nvm alias default 'lts/*'
-  npm install -g @fsouza/prettierd prettier tree-sitter-cli
+  npm install -g @fsouza/prettierd @openai/codex prettier tree-sitter-cli
 }
 
 install_neovim() {
@@ -145,6 +145,7 @@ install_formatters() {
 install_dotfiles() {
   log "Installing dotfiles and helper scripts"
   backup_and_install "$repo_dir/dotfiles/bashrc" "$HOME/.bashrc"
+  backup_and_install "$repo_dir/dotfiles/codex/config.toml" "$HOME/.codex/config.toml"
   backup_and_install "$repo_dir/dotfiles/inputrc" "$HOME/.inputrc"
   backup_and_install "$repo_dir/dotfiles/tmux.conf" "$HOME/.tmux.conf"
   backup_and_install "$repo_dir/dotfiles/nvim/init.lua" "$HOME/.config/nvim/init.lua"
