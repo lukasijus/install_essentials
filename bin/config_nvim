@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+exec nvim "$HOME/.config/nvim/init.lua"
