@@ -1,0 +1,3 @@
+"\C-u": unix-line-discard
+"\C-k": kill-line
+"\C-w": backward-kill-word

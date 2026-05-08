@@ -145,6 +145,7 @@ install_formatters() {
 install_dotfiles() {
   log "Installing dotfiles and helper scripts"
   backup_and_install "$repo_dir/dotfiles/bashrc" "$HOME/.bashrc"
+  backup_and_install "$repo_dir/dotfiles/inputrc" "$HOME/.inputrc"
   backup_and_install "$repo_dir/dotfiles/tmux.conf" "$HOME/.tmux.conf"
   backup_and_install "$repo_dir/dotfiles/nvim/init.lua" "$HOME/.config/nvim/init.lua"
 
