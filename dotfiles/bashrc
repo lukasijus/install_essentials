@@ -86,3 +86,7 @@ if [ -f "$HOME/.local/bin/env" ]; then
   . "$HOME/.local/bin/env"
 fi
 
+case "$TERM" in
+  dumb | linux) ;;
+  *) printf '\e[1 q' ;;
+esac

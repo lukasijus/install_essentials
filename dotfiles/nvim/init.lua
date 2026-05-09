@@ -6,6 +6,12 @@ vim.opt.termguicolors = true
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.clipboard = "unnamedplus"
+vim.opt.guicursor = {
+	"n-v-c:block-blinkon500-blinkoff500",
+	"i-ci-ve:ver25-blinkon500-blinkoff500",
+	"r-cr-o:hor20-blinkon500-blinkoff500",
+	"a:blinkwait700",
+}
 
 -----------------------------------------------------------
 -- 2. Plugin Manager (lazy.nvim)
