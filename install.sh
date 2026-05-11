@@ -46,7 +46,7 @@ install_packages() {
   if have apt-get; then
     "${sudo_cmd[@]}" apt-get update
     "${sudo_cmd[@]}" apt-get install -y \
-      bash ca-certificates build-essential curl fd-find fontconfig git gzip \
+      bash bat ca-certificates build-essential curl fd-find fontconfig git gzip \
       python3 python3-pip python3-venv ripgrep tar tmux unzip wget wl-clipboard \
       xclip xsel
 
@@ -55,11 +55,11 @@ install_packages() {
     fi
   elif have dnf; then
     "${sudo_cmd[@]}" dnf install -y \
-      bash ca-certificates curl fd-find fontconfig git gcc gcc-c++ make \
+      bash bat ca-certificates curl fd-find fontconfig git gcc gcc-c++ make \
       python3 python3-pip ripgrep tar tmux unzip wget xclip
   elif have yum; then
     "${sudo_cmd[@]}" yum install -y \
-      bash ca-certificates curl fontconfig git gcc gcc-c++ make python3 \
+      bash bat ca-certificates curl fontconfig git gcc gcc-c++ make python3 \
       python3-pip ripgrep tar tmux unzip wget
   else
     warn "No supported package manager found. Install base packages manually."

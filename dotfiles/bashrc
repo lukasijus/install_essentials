@@ -52,6 +52,13 @@ alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
 
+if command -v batcat >/dev/null 2>&1; then
+  alias batcat='batcat --pager="less -R -X"'
+  alias bat='batcat --pager="less -R -X"'
+elif command -v bat >/dev/null 2>&1; then
+  alias bat='bat --pager="less -R -X"'
+fi
+
 if command -v notify-send >/dev/null 2>&1; then
   alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history | tail -n1 | sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 fi
@@ -90,3 +97,6 @@ case "$TERM" in
   dumb | linux) ;;
   *) printf '\e[1 q' ;;
 esac
+
+export TARS_LINKEDIN_USERNAME="TARS_LINKEDIN_USERNAME"
+export TARS_LINKEDIN_PASSWORD="TARS_LINKEDIN_PASSWORD"
