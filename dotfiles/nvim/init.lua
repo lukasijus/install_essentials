@@ -7,9 +7,9 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.clipboard = "unnamedplus"
 vim.opt.guicursor = {
-	"n-v-c:block-blinkon500-blinkoff500",
-	"i-ci-ve:ver25-blinkon500-blinkoff500",
-	"r-cr-o:hor20-blinkon500-blinkoff500",
+	"n-v-c:block-Cursor-blinkon500-blinkoff500",
+	"i-ci-ve:block-iCursor-blinkon500-blinkoff500",
+	"r-cr-o:block-Cursor-blinkon500-blinkoff500",
 	"a:blinkwait700",
 }
 
@@ -23,6 +23,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
+	-- Oldschool Theme
 	{
 		"L-Colombo/oldschool.nvim",
 		lazy = false,
@@ -33,6 +34,8 @@ require("lazy").setup({
 			vim.cmd.colorscheme("oldschool")
 		end,
 	},
+
+	-- Lualine matching Oldschool
 	{
 		"nvim-lualine/lualine.nvim",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -46,9 +49,13 @@ require("lazy").setup({
 		},
 	},
 	{ "nvim-tree/nvim-web-devicons", opts = { default = true } },
+
+	-- TREESITTER: FIXED for v1.0+ (No deprecated require calls)
 	{
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
+		-- By providing opts and removing the config function,
+		-- we avoid the "module 'nvim-treesitter.configs' not found" crash.
 		opts = {
 			ensure_installed = { "lua", "python", "javascript", "typescript", "vue", "json" },
 			highlight = {
@@ -58,11 +65,16 @@ require("lazy").setup({
 			indent = { enable = true },
 		},
 	},
+
 	{ "nvim-tree/nvim-tree.lua", opts = {} },
 	{ "nvim-telescope/telescope.nvim", dependencies = { "nvim-lua/plenary.nvim" } },
+
+	-- LSP Management
 	{ "neovim/nvim-lspconfig" },
 	{ "williamboman/mason.nvim", opts = {} },
 	{ "williamboman/mason-lspconfig.nvim", opts = { ensure_installed = { "pyright", "ts_ls", "vue_ls" } } },
+
+	-- Autocomplete (no Copilot, just LSP-driven)
 	{
 		"hrsh7th/nvim-cmp",
 		dependencies = {
@@ -80,13 +92,31 @@ require("lazy").setup({
 				completion = {
 					autocomplete = false,
 				},
+				sources = {
+					{
+						name = "nvim_lsp",
+						entry_filter = function(entry, ctx)
+							local kind = entry:get_kind()
+
+							-- When typing after "except", only show classes
+							if ctx.prev_context and ctx.prev_context:match("except%s+$") then
+								return kind == vim.lsp.protocol.CompletionItemKind.Class
+							end
+
+							return true
+						end,
+					},
+				},
 				sorting = {
 					priority_weight = 2,
 					comparators = {
 						require("cmp.config.compare").offset,
 						require("cmp.config.compare").exact,
 						require("cmp.config.compare").score,
+
+						-- THIS LINE is the magic
 						require("cmp.config.compare").kind,
+
 						require("cmp.config.compare").sort_text,
 						require("cmp.config.compare").length,
 						require("cmp.config.compare").order,
@@ -144,25 +174,37 @@ require("lazy").setup({
 })
 
 -----------------------------------------------------------
--- 3. Native LSP Configuration (Neovim 0.11+ API)
+-- 3. Native LSP Configuration (Neovim 0.11 API)
 -----------------------------------------------------------
-local capabilities = require("cmp_nvim_lsp").default_capabilities()
-local vue_plugin = vim.fn.stdpath("data") .. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
 
+local capabilities = require("cmp_nvim_lsp").default_capabilities()
 vim.lsp.config("pyright", {
 	capabilities = capabilities,
 	settings = { python = { analysis = { typeCheckingMode = "basic", diagnosticMode = "openFilesOnly" } } },
 })
-vim.lsp.enable("pyright")
 
 vim.lsp.config("vue_ls", {
 	capabilities = capabilities,
 	filetypes = { "vue" },
 })
-vim.lsp.enable("vue_ls")
 
 vim.lsp.config("ts_ls", {
 	capabilities = capabilities,
+	filetypes = { "javascript", "typescript", "vue" },
+	init_options = {
+		plugins = { { name = "@vue/typescript-plugin", location = vue_plugin, languages = { "vue" } } },
+	},
+})
+vim.lsp.config("pyright", {
+	settings = { python = { analysis = { typeCheckingMode = "basic", diagnosticMode = "openFilesOnly" } } },
+})
+vim.lsp.enable("pyright")
+
+vim.lsp.config("vue_ls", { filetypes = { "vue" } })
+vim.lsp.enable("vue_ls")
+
+local vue_plugin = vim.fn.stdpath("data") .. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
+vim.lsp.config("ts_ls", {
 	filetypes = { "javascript", "typescript", "vue" },
 	init_options = {
 		plugins = { { name = "@vue/typescript-plugin", location = vue_plugin, languages = { "vue" } } },
@@ -181,7 +223,8 @@ map("n", "<leader>ff", function()
 end)
 map("n", "<leader>fg", function()
 	require("telescope.builtin").live_grep()
-end, { desc = "Grep text in files" })
+end, { desc = "Grep (search text in files)" })
+
 map("n", "<leader>fw", function()
 	require("telescope.builtin").grep_string()
 end, { desc = "Grep word under cursor" })
@@ -197,14 +240,13 @@ vim.api.nvim_create_autocmd("LspAttach", {
 })
 
 vim.diagnostic.config({ virtual_text = false, underline = true, severity_sort = true })
-
 vim.api.nvim_create_autocmd("FileType", {
 	pattern = { "python", "lua", "vue", "javascript", "typescript" },
 	callback = function(args)
 		pcall(vim.treesitter.start, args.buf)
 	end,
 })
-
+-- Buffer navigation
 vim.keymap.set("n", "<Tab>", ":bnext<CR>", { desc = "Next buffer" })
 vim.keymap.set("n", "<S-Tab>", ":bprev<CR>", { desc = "Previous buffer" })
 vim.opt.foldmethod = "indent"
