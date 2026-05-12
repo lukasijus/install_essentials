@@ -129,6 +129,37 @@ install_fonts() {
   rm -rf "$tmp"
 }
 
+configure_terminal_font() {
+  log "Configuring terminal font"
+
+  if ! have gsettings; then
+    warn "gsettings is not available. Select JetBrainsMono Nerd Font manually in your terminal profile."
+    return
+  fi
+
+  if ! gsettings list-schemas | grep -qx 'org.gnome.Terminal.ProfilesList'; then
+    warn "GNOME Terminal settings were not found. Select JetBrainsMono Nerd Font manually in your terminal."
+    return
+  fi
+
+  local profile_id profile_path
+  profile_id="$(gsettings get org.gnome.Terminal.ProfilesList default | tr -d "'")"
+  if [[ -z "$profile_id" ]]; then
+    warn "Could not detect the default GNOME Terminal profile. Select JetBrainsMono Nerd Font manually."
+    return
+  fi
+
+  profile_path="/org/gnome/terminal/legacy/profiles:/:${profile_id}/"
+  gsettings set "org.gnome.Terminal.Legacy.Profile:${profile_path}" use-system-font false || {
+    warn "Could not disable the GNOME Terminal system font setting."
+    return
+  }
+  gsettings set "org.gnome.Terminal.Legacy.Profile:${profile_path}" font 'JetBrainsMono Nerd Font 12' || {
+    warn "Could not set the GNOME Terminal font. Select JetBrainsMono Nerd Font manually."
+    return
+  }
+}
+
 install_formatters() {
   log "Installing editor formatters"
   uv tool install black || true
@@ -175,6 +206,7 @@ main() {
   install_node
   install_neovim
   install_fonts
+  configure_terminal_font
   install_formatters
   install_dotfiles
   bootstrap_neovim

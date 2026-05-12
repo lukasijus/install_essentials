@@ -44,6 +44,13 @@ up once with a timestamp before the managed files are installed.
 
 - Neovim is installed from the official release tarball on `x86_64` and `arm64`.
   Other architectures fall back to the OS package manager.
+- Nerd Font icons in Neovim require the terminal profile to use a Nerd Font.
+  On Ubuntu GNOME Terminal, `install.sh` sets the default profile to
+  `JetBrainsMono Nerd Font 12`. In other terminals, select
+  `JetBrainsMono Nerd Font` manually if icons appear as boxes.
+- tmux copy mode sends yanks to the desktop clipboard when `wl-copy`, `xclip`,
+  or `xsel` is available. Use `Ctrl-b [` then `y` to copy the current line, or
+  `Ctrl-b [` then `v`, move, and `Enter` to copy a selection.
 - Node is installed with `nvm` because that works well across x86 cloud machines
   and arm64 Jetson boards.
 - Codex auth is intentionally per-machine. After install, run `codex login`.
