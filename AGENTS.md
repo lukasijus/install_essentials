@@ -29,14 +29,40 @@ servers. It also has `eslint_d` installed. For project verification, prefer the
 project's own lint/test commands first, then use these global tools as a
 fallback when no project-specific command exists.
 
+## Development Workflow
+
+Read the existing code path before editing. Prefer the smallest correct change
+that fits the repository's current patterns, especially in auth, RBAC, billing,
+filesystem, deployment, and installer code.
+
+Check `git status` before making changes. Never revert unrelated user changes.
+If unrelated changes are present, leave them alone and keep the requested work
+scoped to the relevant files.
+
 ## Testing And Verification
 
-- PYTHON test use pytest
-- TYPESCRIPT/JAVASCRIPT use Vitest
-- C/C++ use Catch2
-- For embedded / pure C use Unity
-- For Rust use cargo test
+Testing is part of implementation, not a final optional step.
 
-For WEB apps use playwright to test it throughly when implementing feature, even the test pass, go with playwrithg make snapshots where the feature is implemented confirm the behaviour.
+- For new behavior, write or update a focused test before implementation when
+  practical.
+- For bug fixes, add a regression test that fails against the old behavior when
+  possible.
+- Prefer unit tests for pure logic, validation, parsing, permissions, state
+  transitions, and edge cases.
+- Do not replace cheap automated tests with manual verification.
+- If tests are skipped, state the concrete reason and describe what verification
+  was done instead.
 
-Every time we implement a new feature before even writing a single implementation line of code, we need to write unit tests for that specific feature. 
+Default test commands by stack:
+
+- Python: `pytest`
+- TypeScript/JavaScript: `vitest`
+- Rust: `cargo test`
+- C/C++: Catch2 when available
+- Embedded / pure C: Unity when available
+
+For web app UI changes, use Playwright for browser-level verification and
+capture screenshots for the changed workflow when practical.
+
+Every code change should end with a short verification note: tests run, commands
+run, what passed, and what was not run.
