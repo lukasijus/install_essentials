@@ -49,8 +49,9 @@ up once with a timestamp before the managed files are installed.
   `JetBrainsMono Nerd Font 12`. In other terminals, select
   `JetBrainsMono Nerd Font` manually if icons appear as boxes.
 - tmux copy mode sends yanks to the desktop clipboard when `wl-copy`, `xclip`,
-  or `xsel` is available. Use `Ctrl-b [` then `y` to copy the current line, or
-  `Ctrl-b [` then `v`, move, and `Enter` to copy a selection.
+  or `xsel` is available. Use `Ctrl-b [` then `yy` or `Y` to copy the current
+  line without leaving copy mode, or `Ctrl-b [` then `v`, move, and `y` to copy
+  a selection.
 - Node is installed with `nvm` because that works well across x86 cloud machines
   and arm64 Jetson boards.
 - Codex auth is intentionally per-machine. After install, run `codex login`.
