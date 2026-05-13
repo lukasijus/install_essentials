@@ -1,0 +1,51 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+have() {
+  command -v "$1" >/dev/null 2>&1
+}
+
+show_var() {
+  local name="$1"
+  printf '%-18s %s\n' "$name" "${!name-}"
+}
+
+printf 'Clipboard commands:\n'
+for cmd in wl-copy xclip xsel; do
+  if have "$cmd"; then
+    printf '  %-8s %s\n' "$cmd" "$(command -v "$cmd")"
+  else
+    printf '  %-8s missing\n' "$cmd"
+  fi
+done
+
+printf '\nShell desktop environment:\n'
+show_var DISPLAY
+show_var WAYLAND_DISPLAY
+show_var XDG_RUNTIME_DIR
+show_var SSH_AUTH_SOCK
+
+if have tmux && tmux info >/dev/null 2>&1; then
+  printf '\ntmux global environment:\n'
+  for name in DISPLAY WAYLAND_DISPLAY XDG_RUNTIME_DIR SSH_AUTH_SOCK; do
+    tmux show-environment -g "$name" 2>/dev/null || printf '%s is unset\n' "$name"
+  done
+else
+  printf '\ntmux server: not running or not reachable\n'
+fi
+
+printf '\nClipboard test:\n'
+payload="tmux clipboard test $(date +%s)"
+if have wl-copy && [ -n "${WAYLAND_DISPLAY:-}" ] && [ -S "${XDG_RUNTIME_DIR:-}/${WAYLAND_DISPLAY:-}" ]; then
+  printf '%s' "$payload" | wl-copy
+  printf 'copied test text with wl-copy\n'
+elif have xclip && [ -n "${DISPLAY:-}" ]; then
+  printf '%s' "$payload" | xclip -selection clipboard
+  printf 'copied test text with xclip\n'
+elif have xsel && [ -n "${DISPLAY:-}" ]; then
+  printf '%s' "$payload" | xsel --clipboard --input
+  printf 'copied test text with xsel\n'
+else
+  printf 'no usable desktop clipboard backend found\n'
+  exit 1
+fi

@@ -39,6 +39,7 @@ up once with a timestamp before the managed files are installed.
 - `~/.config/nvim/init.lua`
 - `~/bin/config_nvim`
 - `~/bin/nvim_src`
+- `~/bin/tmux_clipboard_doctor`
 
 ## Notes
 
@@ -51,7 +52,10 @@ up once with a timestamp before the managed files are installed.
 - tmux copy mode sends yanks to the desktop clipboard when `wl-copy`, `xclip`,
   or `xsel` is available. Use `Ctrl-b [` then `yy` or `Y` to copy the current
   line without leaving copy mode, or `Ctrl-b [` then `v`, move, and `y` to copy
-  a selection.
+  a selection. New interactive shells refresh tmux's `DISPLAY`,
+  `WAYLAND_DISPLAY`, `XDG_RUNTIME_DIR`, and `SSH_AUTH_SOCK` values so an older
+  tmux server can still reach the desktop clipboard. Run
+  `tmux_clipboard_doctor` if browser paste does not work after install.
 - Node is installed with `nvm` because that works well across x86 cloud machines
   and arm64 Jetson boards.
 - Codex auth is intentionally per-machine. After install, run `codex login`.

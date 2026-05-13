@@ -56,11 +56,12 @@ install_packages() {
   elif have dnf; then
     "${sudo_cmd[@]}" dnf install -y \
       bash bat ca-certificates curl fd-find fontconfig git gcc gcc-c++ make \
-      python3 python3-pip ripgrep tar tmux unzip wget xclip
+      python3 python3-pip ripgrep tar tmux unzip wget wl-clipboard xclip xsel
   elif have yum; then
     "${sudo_cmd[@]}" yum install -y \
       bash bat ca-certificates curl fontconfig git gcc gcc-c++ make python3 \
       python3-pip ripgrep tar tmux unzip wget
+    "${sudo_cmd[@]}" yum install -y wl-clipboard xclip xsel || warn "Could not install clipboard helpers from yum."
   else
     warn "No supported package manager found. Install base packages manually."
   fi
@@ -202,7 +203,8 @@ install_dotfiles() {
   mkdir -p "$HOME/bin"
   backup_and_install "$repo_dir/bin/config_nvim" "$HOME/bin/config_nvim"
   backup_and_install "$repo_dir/bin/nvim_src" "$HOME/bin/nvim_src"
-  chmod +x "$HOME/bin/config_nvim" "$HOME/bin/nvim_src"
+  backup_and_install "$repo_dir/bin/tmux_clipboard_doctor" "$HOME/bin/tmux_clipboard_doctor"
+  chmod +x "$HOME/bin/config_nvim" "$HOME/bin/nvim_src" "$HOME/bin/tmux_clipboard_doctor"
 
   append_once 'export PATH="$HOME/bin:$HOME/.local/bin:$PATH"' "$HOME/.profile"
 }
