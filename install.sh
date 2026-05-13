@@ -199,6 +199,7 @@ install_dotfiles() {
   backup_and_install "$repo_dir/dotfiles/inputrc" "$HOME/.inputrc"
   backup_and_install "$repo_dir/dotfiles/tmux.conf" "$HOME/.tmux.conf"
   backup_and_install "$repo_dir/dotfiles/nvim/init.lua" "$HOME/.config/nvim/init.lua"
+  backup_and_install "$repo_dir/AGENTS.md" "$HOME/AGENTS.md"
 
   mkdir -p "$HOME/bin"
   backup_and_install "$repo_dir/bin/config_nvim" "$HOME/bin/config_nvim"

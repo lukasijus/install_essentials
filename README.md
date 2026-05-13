@@ -37,6 +37,7 @@ up once with a timestamp before the managed files are installed.
 - `~/.inputrc`
 - `~/.tmux.conf`
 - `~/.config/nvim/init.lua`
+- `~/AGENTS.md`
 - `~/bin/config_nvim`
 - `~/bin/nvim_src`
 - `~/bin/tmux_clipboard_doctor`
