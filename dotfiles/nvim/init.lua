@@ -2,6 +2,7 @@
 -- 1. Global Options & Leader
 -----------------------------------------------------------
 vim.g.mapleader = " "
+vim.opt.autoread = true
 vim.opt.termguicolors = true
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -12,6 +13,10 @@ vim.opt.guicursor = {
 	"r-cr-o:block-Cursor-blinkon500-blinkoff500",
 	"a:blinkwait700",
 }
+
+vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
+	command = "checktime",
+})
 
 -----------------------------------------------------------
 -- 2. Plugin Manager (lazy.nvim)
@@ -57,7 +62,7 @@ require("lazy").setup({
 		-- By providing opts and removing the config function,
 		-- we avoid the "module 'nvim-treesitter.configs' not found" crash.
 		opts = {
-			ensure_installed = { "lua", "python", "javascript", "typescript", "vue", "json" },
+			ensure_installed = { "bash", "lua", "python", "javascript", "typescript", "vue", "json" },
 			highlight = {
 				enable = true,
 				additional_vim_regex_highlighting = false,
@@ -162,9 +167,15 @@ require("lazy").setup({
 			formatters_by_ft = {
 				python = { "black" },
 				lua = { "stylua" },
+				sh = { "shfmt" },
 				javascript = { "prettierd" },
 				typescript = { "prettierd" },
 				vue = { "prettierd" },
+			},
+			formatters = {
+				shfmt = {
+					prepend_args = { "-i", "2" },
+				},
 			},
 			format_on_save = { timeout_ms = 500, lsp_fallback = true },
 		},
@@ -241,9 +252,18 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 vim.diagnostic.config({ virtual_text = false, underline = true, severity_sort = true })
 vim.api.nvim_create_autocmd("FileType", {
-	pattern = { "python", "lua", "vue", "javascript", "typescript" },
+	pattern = { "python", "lua", "vue", "javascript", "typescript", "sh" },
 	callback = function(args)
 		pcall(vim.treesitter.start, args.buf)
+	end,
+})
+vim.api.nvim_create_autocmd("FileType", {
+	pattern = { "sh" },
+	callback = function()
+		vim.opt_local.expandtab = true
+		vim.opt_local.tabstop = 2
+		vim.opt_local.shiftwidth = 2
+		vim.opt_local.softtabstop = 2
 	end,
 })
 -- Buffer navigation

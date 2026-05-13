@@ -11,8 +11,8 @@ images, and ordinary cloud Linux machines:
 - Node.js LTS via `nvm`
 - OpenAI Codex CLI via the global `@openai/codex` npm package
 - Python tooling via `uv`
-- common CLI tools: `git`, `curl`, `ripgrep`, `fd`, compilers, clipboard helpers
-- formatters used by Neovim: `black`, `stylua`, `prettierd`
+- common CLI tools: `git`, `gh`, `curl`, `ripgrep`, `fd`, compilers, clipboard helpers
+- formatters used by Neovim: `black`, `stylua`, `shfmt`, `prettierd`
 
 This repo intentionally does not include Aider wrappers, `.env` files, API keys,
 Shopify credentials, project-specific service files, or private path shortcuts

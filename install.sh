@@ -66,6 +66,22 @@ install_packages() {
   fi
 }
 
+install_gh() {
+  log "Installing GitHub CLI"
+  if have gh; then
+    return
+  fi
+  if have apt-get; then
+    "${sudo_cmd[@]}" apt-get install -y gh || warn "Could not install gh from apt."
+  elif have dnf; then
+    "${sudo_cmd[@]}" dnf install -y gh || warn "Could not install gh from dnf."
+  elif have yum; then
+    "${sudo_cmd[@]}" yum install -y gh || warn "Could not install gh from yum."
+  else
+    warn "No supported package manager found. Install GitHub CLI manually."
+  fi
+}
+
 install_uv() {
   log "Installing uv"
   if ! have uv; then
@@ -92,19 +108,19 @@ install_neovim() {
   local arch asset tmp
   arch="$(uname -m)"
   case "$arch" in
-    x86_64 | amd64) asset="nvim-linux-x86_64.tar.gz" ;;
-    aarch64 | arm64) asset="nvim-linux-arm64.tar.gz" ;;
-    *)
-      warn "No Neovim release tarball path configured for $arch. Falling back to OS package."
-      if have apt-get; then
-        "${sudo_cmd[@]}" apt-get install -y neovim
-      elif have dnf; then
-        "${sudo_cmd[@]}" dnf install -y neovim
-      elif have yum; then
-        "${sudo_cmd[@]}" yum install -y neovim
-      fi
-      return
-      ;;
+  x86_64 | amd64) asset="nvim-linux-x86_64.tar.gz" ;;
+  aarch64 | arm64) asset="nvim-linux-arm64.tar.gz" ;;
+  *)
+    warn "No Neovim release tarball path configured for $arch. Falling back to OS package."
+    if have apt-get; then
+      "${sudo_cmd[@]}" apt-get install -y neovim
+    elif have dnf; then
+      "${sudo_cmd[@]}" dnf install -y neovim
+    elif have yum; then
+      "${sudo_cmd[@]}" yum install -y neovim
+    fi
+    return
+    ;;
   esac
 
   tmp="$(mktemp -d)"
@@ -165,8 +181,10 @@ install_formatters() {
   uv tool install black || true
   if have apt-get; then
     "${sudo_cmd[@]}" apt-get install -y stylua || true
+    "${sudo_cmd[@]}" apt-get install -y shfmt shellcheck || warn "Could not install shell formatters from apt."
   elif have dnf; then
     "${sudo_cmd[@]}" dnf install -y stylua || true
+    "${sudo_cmd[@]}" dnf install -y shfmt ShellCheck || warn "Could not install shell formatters from dnf."
   fi
   if ! have stylua && have cargo; then
     cargo install stylua || true
@@ -193,7 +211,7 @@ bootstrap_neovim() {
   if have nvim; then
     log "Bootstrapping Neovim plugins"
     nvim --headless "+Lazy! sync" +qa || true
-    nvim --headless "+MasonInstall pyright typescript-language-server vue-language-server" +qa || true
+    nvim --headless "+MasonInstall pyright typescript-language-server vue-language-server stylua shfmt shellcheck" +qa || true
     nvim --headless "+TSUpdate" +qa || true
   else
     warn "nvim is not available on PATH yet; open a new shell and run :Lazy sync."
@@ -202,6 +220,7 @@ bootstrap_neovim() {
 
 main() {
   install_packages
+  install_gh
   install_uv
   install_node
   install_neovim
