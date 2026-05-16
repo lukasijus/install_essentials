@@ -75,3 +75,7 @@ We should have consolidated tech stack for our projects and if there is no speci
 - TYPESCRIPT: We should avoid "any" types where possible to make the behaviour more predictable
 - MUI: material UI and MUIX, again reliable, easy to follow and understand, looks clean and customizible
 - VITE: default build tool
+
+## CODEX CLI BEHAVIOUR
+
+If we have to execute multple command in terminal, often time when pasting the command line breaks and it wont succesfully finish or break in the middle of installation. Best is to put make a script with commands necessary to run so we can just ./example_function.sh
