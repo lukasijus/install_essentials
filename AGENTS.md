@@ -66,3 +66,12 @@ capture screenshots for the changed workflow when practical.
 
 Every code change should end with a short verification note: tests run, commands
 run, what passed, and what was not run.
+
+## WEB APP FRAMEWORKS
+
+We should have consolidated tech stack for our projects and if there is no specifications from inside the project we should use as follows:
+
+- REACT: The most well known and documented framework
+- TYPESCRIPT: We should avoid "any" types where possible to make the behaviour more predictable
+- MUI: material UI and MUIX, again reliable, easy to follow and understand, looks clean and customizible
+- VITE: default build tool
