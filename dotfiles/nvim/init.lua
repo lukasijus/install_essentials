@@ -169,7 +169,9 @@ require("lazy").setup({
 				lua = { "stylua" },
 				sh = { "shfmt" },
 				javascript = { "prettierd" },
+				javascriptreact = { "prettierd" },
 				typescript = { "prettierd" },
+				typescriptreact = { "prettierd" },
 				vue = { "prettierd" },
 			},
 			formatters = {
@@ -201,7 +203,7 @@ vim.lsp.config("vue_ls", {
 
 vim.lsp.config("ts_ls", {
 	capabilities = capabilities,
-	filetypes = { "javascript", "typescript", "vue" },
+	filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
 	init_options = {
 		plugins = { { name = "@vue/typescript-plugin", location = vue_plugin, languages = { "vue" } } },
 	},
@@ -216,12 +218,18 @@ vim.lsp.enable("vue_ls")
 
 local vue_plugin = vim.fn.stdpath("data") .. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
 vim.lsp.config("ts_ls", {
-	filetypes = { "javascript", "typescript", "vue" },
+	filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
 	init_options = {
 		plugins = { { name = "@vue/typescript-plugin", location = vue_plugin, languages = { "vue" } } },
 	},
 })
 vim.lsp.enable("ts_ls")
+
+vim.lsp.config("eslint", {
+	capabilities = capabilities,
+	filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
+})
+vim.lsp.enable("eslint")
 
 -----------------------------------------------------------
 -- 4. Keymaps & Diagnostics
@@ -252,7 +260,7 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 vim.diagnostic.config({ virtual_text = false, underline = true, severity_sort = true })
 vim.api.nvim_create_autocmd("FileType", {
-	pattern = { "python", "lua", "vue", "javascript", "typescript", "sh" },
+	pattern = { "python", "lua", "vue", "javascript", "javascriptreact", "typescript", "typescriptreact", "sh" },
 	callback = function(args)
 		pcall(vim.treesitter.start, args.buf)
 	end,

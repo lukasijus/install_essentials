@@ -214,7 +214,7 @@ bootstrap_neovim() {
   if have nvim; then
     log "Bootstrapping Neovim plugins"
     nvim --headless "+Lazy! sync" +qa || true
-    nvim --headless "+MasonInstall pyright typescript-language-server vue-language-server stylua shfmt shellcheck" +qa || true
+    nvim --headless "+MasonInstall pyright typescript-language-server vue-language-server eslint-lsp stylua shfmt shellcheck" +qa || true
     nvim --headless "+TSUpdate" +qa || true
   else
     warn "nvim is not available on PATH yet; open a new shell and run :Lazy sync."
