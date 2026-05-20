@@ -20,3 +20,21 @@ enabled = true
 terminal_resize_reflow = true
 memories = true
 goals = true
+
+[mcp_servers.playwright]
+command = "npx"
+args = [
+"@playwright/mcp@latest",
+"--browser", "chromium",
+"--executable-path", "/home/luke/.cache/ms-playwright/chromium-1224/chrome-linux64/chrome",
+"--no-sandbox",
+"--viewport-size", "1280x900",
+"--output-dir", "/home/luke/nanocameraai/playwright_mcp_test_screenshots"
+]
+env = {
+	DISPLAY = ":0",
+	WAYLAND_DISPLAY = "wayland-0",
+	XDG_RUNTIME_DIR = "/run/user/1000",
+	XDG_SESSION_TYPE = "wayland"
+}
+
