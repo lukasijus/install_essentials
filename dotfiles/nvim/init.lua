@@ -2,7 +2,6 @@
 -- 1. Global Options & Leader
 -----------------------------------------------------------
 vim.g.mapleader = " "
-vim.opt.autoread = true
 vim.opt.termguicolors = true
 vim.opt.number = true
 vim.opt.relativenumber = true
@@ -13,11 +12,6 @@ vim.opt.guicursor = {
 	"r-cr-o:block-Cursor-blinkon500-blinkoff500",
 	"a:blinkwait700",
 }
-
-vim.api.nvim_create_autocmd({ "FocusGained", "BufEnter", "CursorHold" }, {
-	command = "checktime",
-})
-
 -----------------------------------------------------------
 -- 2. Plugin Manager (lazy.nvim)
 -----------------------------------------------------------
@@ -28,6 +22,15 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
+	{
+		"MeanderingProgrammer/render-markdown.nvim",
+		dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.nvim" }, -- if you use the mini.nvim suite
+		-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.icons' },        -- if you use standalone mini plugins
+		-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-tree/nvim-web-devicons' }, -- if you prefer nvim-web-devicons
+		---@module 'render-markdown'
+		---@type render.md.UserConfig
+		opts = {},
+	},
 	-- Oldschool Theme
 	{
 		"L-Colombo/oldschool.nvim",
@@ -62,7 +65,7 @@ require("lazy").setup({
 		-- By providing opts and removing the config function,
 		-- we avoid the "module 'nvim-treesitter.configs' not found" crash.
 		opts = {
-			ensure_installed = { "bash", "lua", "python", "javascript", "typescript", "vue", "json" },
+			ensure_installed = { "lua", "python", "javascript", "typescript", "vue", "json" },
 			highlight = {
 				enable = true,
 				additional_vim_regex_highlighting = false,
@@ -77,13 +80,18 @@ require("lazy").setup({
 	-- LSP Management
 	{ "neovim/nvim-lspconfig" },
 	{ "williamboman/mason.nvim", opts = {} },
-	{ "williamboman/mason-lspconfig.nvim", opts = { ensure_installed = { "pyright", "ts_ls", "vue_ls" } } },
+	{
+		"williamboman/mason-lspconfig.nvim",
+		opts = { ensure_installed = { "pyright", "ts_ls", "vue_ls", "lua_ls", "eslint" } },
+	},
 
 	-- Autocomplete (no Copilot, just LSP-driven)
 	{
 		"hrsh7th/nvim-cmp",
 		dependencies = {
 			"hrsh7th/cmp-nvim-lsp",
+			"hrsh7th/cmp-buffer",
+			"hrsh7th/cmp-path",
 			"L3MON4D3/LuaSnip",
 			"saadparwaiz1/cmp_luasnip",
 		},
@@ -95,22 +103,27 @@ require("lazy").setup({
 
 			cmp.setup({
 				completion = {
-					autocomplete = false,
+					autocomplete = { cmp.TriggerEvent.TextChanged },
 				},
 				sources = {
 					{
 						name = "nvim_lsp",
 						entry_filter = function(entry, ctx)
 							local kind = entry:get_kind()
+							local line = vim.api.nvim_buf_get_lines(ctx.bufnr, ctx.cursor.line - 1, ctx.cursor.line, false)[1] or ""
+							local before_cursor = line:sub(1, ctx.cursor.col)
 
 							-- When typing after "except", only show classes
-							if ctx.prev_context and ctx.prev_context:match("except%s+$") then
+							if before_cursor:match("except%s+$") then
 								return kind == vim.lsp.protocol.CompletionItemKind.Class
 							end
 
 							return true
 						end,
 					},
+					{ name = "path" },
+					{ name = "luasnip" },
+					{ name = "buffer", keyword_length = 3 },
 				},
 				sorting = {
 					priority_weight = 2,
@@ -134,6 +147,7 @@ require("lazy").setup({
 				},
 				mapping = cmp.mapping.preset.insert({
 					["<C-Space>"] = cmp.mapping.complete(),
+					["<C-e>"] = cmp.mapping.abort(),
 					["<CR>"] = cmp.mapping.confirm({ select = true }),
 					["<Tab>"] = cmp.mapping(function(fallback)
 						if cmp.visible() then
@@ -154,10 +168,6 @@ require("lazy").setup({
 						end
 					end, { "i", "s" }),
 				}),
-				sources = {
-					{ name = "nvim_lsp" },
-					{ name = "luasnip" },
-				},
 			})
 		end,
 	},
@@ -167,17 +177,11 @@ require("lazy").setup({
 			formatters_by_ft = {
 				python = { "black" },
 				lua = { "stylua" },
-				sh = { "shfmt" },
 				javascript = { "prettierd" },
 				javascriptreact = { "prettierd" },
 				typescript = { "prettierd" },
 				typescriptreact = { "prettierd" },
 				vue = { "prettierd" },
-			},
-			formatters = {
-				shfmt = {
-					prepend_args = { "-i", "2" },
-				},
 			},
 			format_on_save = { timeout_ms = 500, lsp_fallback = true },
 		},
@@ -191,9 +195,37 @@ require("lazy").setup({
 -----------------------------------------------------------
 
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
+local function lua_root_dir(bufnr, on_dir)
+	local file = vim.api.nvim_buf_get_name(bufnr)
+	local nvim_config = vim.fn.stdpath("config")
+
+	if file:sub(1, #nvim_config) == nvim_config then
+		on_dir(nvim_config)
+		return
+	end
+
+	on_dir(vim.fs.root(bufnr, { ".luarc.json", ".luarc.jsonc", ".stylua.toml", "stylua.toml", ".git" }))
+end
+
 vim.lsp.config("pyright", {
 	capabilities = capabilities,
 	settings = { python = { analysis = { typeCheckingMode = "basic", diagnosticMode = "openFilesOnly" } } },
+})
+
+vim.lsp.config("lua_ls", {
+	capabilities = capabilities,
+	root_dir = lua_root_dir,
+	settings = {
+		Lua = {
+			diagnostics = { globals = { "vim" } },
+			runtime = { version = "LuaJIT" },
+			workspace = {
+				checkThirdParty = false,
+				library = vim.api.nvim_get_runtime_file("", true),
+			},
+			telemetry = { enable = false },
+		},
+	},
 })
 
 vim.lsp.config("vue_ls", {
@@ -201,6 +233,7 @@ vim.lsp.config("vue_ls", {
 	filetypes = { "vue" },
 })
 
+local vue_plugin = vim.fn.stdpath("data") .. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
 vim.lsp.config("ts_ls", {
 	capabilities = capabilities,
 	filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
@@ -208,28 +241,12 @@ vim.lsp.config("ts_ls", {
 		plugins = { { name = "@vue/typescript-plugin", location = vue_plugin, languages = { "vue" } } },
 	},
 })
-vim.lsp.config("pyright", {
-	settings = { python = { analysis = { typeCheckingMode = "basic", diagnosticMode = "openFilesOnly" } } },
-})
-vim.lsp.enable("pyright")
-
-vim.lsp.config("vue_ls", { filetypes = { "vue" } })
-vim.lsp.enable("vue_ls")
-
-local vue_plugin = vim.fn.stdpath("data") .. "/mason/packages/vue-language-server/node_modules/@vue/language-server"
-vim.lsp.config("ts_ls", {
-	filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
-	init_options = {
-		plugins = { { name = "@vue/typescript-plugin", location = vue_plugin, languages = { "vue" } } },
-	},
-})
-vim.lsp.enable("ts_ls")
 
 vim.lsp.config("eslint", {
 	capabilities = capabilities,
 	filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
 })
-vim.lsp.enable("eslint")
+vim.lsp.enable({ "pyright", "lua_ls", "vue_ls", "ts_ls", "eslint" })
 
 -----------------------------------------------------------
 -- 4. Keymaps & Diagnostics
@@ -260,18 +277,9 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 vim.diagnostic.config({ virtual_text = false, underline = true, severity_sort = true })
 vim.api.nvim_create_autocmd("FileType", {
-	pattern = { "python", "lua", "vue", "javascript", "javascriptreact", "typescript", "typescriptreact", "sh" },
+	pattern = { "python", "lua", "vue", "javascript", "javascriptreact", "typescript", "typescriptreact" },
 	callback = function(args)
 		pcall(vim.treesitter.start, args.buf)
-	end,
-})
-vim.api.nvim_create_autocmd("FileType", {
-	pattern = { "sh" },
-	callback = function()
-		vim.opt_local.expandtab = true
-		vim.opt_local.tabstop = 2
-		vim.opt_local.shiftwidth = 2
-		vim.opt_local.softtabstop = 2
 	end,
 })
 -- Buffer navigation
