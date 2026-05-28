@@ -195,6 +195,23 @@ require("lazy").setup({
 -----------------------------------------------------------
 
 local capabilities = require("cmp_nvim_lsp").default_capabilities()
+local function python_path_for_workspace(workspace)
+	local virtual_env = os.getenv("VIRTUAL_ENV")
+
+	if virtual_env and vim.fn.executable(virtual_env .. "/bin/python") == 1 then
+		return virtual_env .. "/bin/python"
+	end
+
+	for _, name in ipairs({ ".venv", "venv" }) do
+		local path = workspace .. "/" .. name .. "/bin/python"
+		if vim.fn.executable(path) == 1 then
+			return path
+		end
+	end
+
+	return nil
+end
+
 local function lua_root_dir(bufnr, on_dir)
 	local file = vim.api.nvim_buf_get_name(bufnr)
 	local nvim_config = vim.fn.stdpath("config")
@@ -209,7 +226,25 @@ end
 
 vim.lsp.config("pyright", {
 	capabilities = capabilities,
-	settings = { python = { analysis = { typeCheckingMode = "basic", diagnosticMode = "openFilesOnly" } } },
+	before_init = function(_, config)
+		local python_path = python_path_for_workspace(config.root_dir or vim.fn.getcwd())
+
+		if python_path then
+			config.settings = config.settings or {}
+			config.settings.python = config.settings.python or {}
+			config.settings.python.pythonPath = python_path
+		end
+	end,
+	settings = {
+		python = {
+			analysis = {
+				autoSearchPaths = true,
+				diagnosticMode = "openFilesOnly",
+				typeCheckingMode = "basic",
+				useLibraryCodeForTypes = true,
+			},
+		},
+	},
 })
 
 vim.lsp.config("lua_ls", {
