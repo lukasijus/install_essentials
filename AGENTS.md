@@ -73,7 +73,8 @@ We should have consolidated tech stack for our projects and if there is no speci
 
 - REACT: The most well known and documented framework
 - TYPESCRIPT: We should avoid "any" types where possible to make the behaviour more predictable
-- MUI: material UI and MUIX, again reliable, easy to follow and understand, looks clean and customizible
+- MUI: material UI and MUIX, again reliable, easy to follow and understand, looks clean and customizible.
+- Always use this sidebar for starting new project: https://react-mui-sidebar.vercel.app
 - VITE: default build tool
 
 ## CODEX CLI BEHAVIOUR
