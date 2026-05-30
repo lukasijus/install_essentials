@@ -21,6 +21,10 @@ terminal_resize_reflow = true
 memories = true
 goals = true
 
+[mcp_servers.mui]
+command= "npx"
+args = ["-y", "@mui/mcp@latest"]
+
 [mcp_servers.playwright]
 command = "npx"
 args = [
