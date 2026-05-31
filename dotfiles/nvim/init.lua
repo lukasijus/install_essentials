@@ -21,7 +21,16 @@ if not (vim.uv or vim.loop).fs_stat(lazypath) then
 end
 vim.opt.rtp:prepend(lazypath)
 
+vim.filetype.add({
+	extension = {
+		plantuml = "plantuml",
+		pu = "plantuml",
+		puml = "plantuml",
+	},
+})
+
 require("lazy").setup({
+	{ "aklt/plantuml-syntax", ft = { "plantuml" } },
 	{
 		"MeanderingProgrammer/render-markdown.nvim",
 		dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.nvim" }, -- if you use the mini.nvim suite
