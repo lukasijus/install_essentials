@@ -1,0 +1,115 @@
+#!/usr/bin/env python3
+import argparse
+import re
+import sys
+from pathlib import Path
+
+BLOCK_START_RE = re.compile(
+    r"^\s*(entity|class|interface|abstract\s+class|enum|object|annotation)\b.*\{\s*$",
+    re.IGNORECASE,
+)
+FIELD_RE = re.compile(r"^(.+?)\s*:\s*(.+)$")
+
+
+def is_field_line(line: str) -> bool:
+    stripped = line.strip()
+    if not stripped or stripped.startswith(("'", "@", "!", "--", "..", "==")):
+        return False
+    if any(token in stripped for token in ("->", "-->", "<-", "<--", "=>")):
+        return False
+    return FIELD_RE.match(stripped) is not None
+
+
+def align_field_run(lines: list[str]) -> list[str]:
+    if not lines:
+        return []
+
+    parsed: list[tuple[str, str] | None] = []
+    max_left = 0
+    for line in lines:
+        match = FIELD_RE.match(line.strip())
+        if match:
+            left = match.group(1).strip()
+            right = match.group(2).strip()
+            parsed.append((left, right))
+            max_left = max(max_left, len(left))
+        else:
+            parsed.append(None)
+
+    aligned: list[str] = []
+    for original, item in zip(lines, parsed):
+        if item is None:
+            aligned.append(original.strip())
+            continue
+        left, right = item
+        aligned.append(f"{left.ljust(max_left)} : {right}")
+    return aligned
+
+
+def flush_field_run(output: list[str], run: list[str], indent: str) -> None:
+    for line in align_field_run(run):
+        output.append(f"{indent}{line}" if line else "")
+    run.clear()
+
+
+def format_puml(source: str) -> str:
+    output: list[str] = []
+    field_run: list[str] = []
+    indent_level = 0
+    in_structured_block = False
+
+    for raw_line in source.splitlines():
+        stripped = raw_line.expandtabs(4).strip()
+
+        if not stripped:
+            flush_field_run(output, field_run, "    " * indent_level)
+            if output and output[-1] != "":
+                output.append("")
+            continue
+
+        closes_block = stripped == "}"
+        if closes_block:
+            flush_field_run(output, field_run, "    " * indent_level)
+            indent_level = max(indent_level - 1, 0)
+            in_structured_block = False
+
+        indent = "    " * indent_level
+
+        if in_structured_block and is_field_line(stripped):
+            field_run.append(stripped)
+        else:
+            flush_field_run(output, field_run, indent)
+            output.append(f"{indent}{stripped}")
+
+        if BLOCK_START_RE.match(stripped):
+            indent_level += 1
+            in_structured_block = True
+
+    flush_field_run(output, field_run, "    " * indent_level)
+
+    while output and output[-1] == "":
+        output.pop()
+
+    return "\n".join(output) + ("\n" if source else "")
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Conservative PlantUML formatter")
+    parser.add_argument(
+        "files", nargs="*", help="Files to format in place. Reads stdin when omitted."
+    )
+    args = parser.parse_args()
+
+    if not args.files:
+        sys.stdout.write(format_puml(sys.stdin.read()))
+        return 0
+
+    for file_name in args.files:
+        path = Path(file_name)
+        path.write_text(format_puml(path.read_text()), encoding="utf-8")
+
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

@@ -205,7 +205,9 @@ install_dotfiles() {
   backup_and_install "$repo_dir/bin/config_nvim" "$HOME/bin/config_nvim"
   backup_and_install "$repo_dir/bin/nvim_src" "$HOME/bin/nvim_src"
   backup_and_install "$repo_dir/bin/tmux_clipboard_doctor" "$HOME/bin/tmux_clipboard_doctor"
+  backup_and_install "$repo_dir/bin/puml-format" "$HOME/.local/bin/puml-format"
   chmod +x "$HOME/bin/config_nvim" "$HOME/bin/nvim_src" "$HOME/bin/tmux_clipboard_doctor"
+  chmod +x "$HOME/.local/bin/puml-format"
 
   append_once 'export PATH="$HOME/bin:$HOME/.local/bin:$PATH"' "$HOME/.profile"
 }

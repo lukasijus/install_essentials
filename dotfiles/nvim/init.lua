@@ -191,6 +191,14 @@ require("lazy").setup({
 				typescript = { "prettierd" },
 				typescriptreact = { "prettierd" },
 				vue = { "prettierd" },
+				markdown = { "prettierd" },
+				plantuml = { "puml_format" },
+			},
+			formatters = {
+				puml_format = {
+					command = "/home/luke/.local/bin/puml-format",
+					stdin = true,
+				},
 			},
 			format_on_save = { timeout_ms = 500, lsp_fallback = true },
 		},
