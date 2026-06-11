@@ -82,8 +82,7 @@ require("lazy").setup({
 			indent = { enable = true },
 		},
 	},
-
-	{ "nvim-tree/nvim-tree.lua", opts = {} },
+	{ "nvim-tree/nvim-tree.lua", opts = { view = { width = 60 } } },
 	{ "nvim-telescope/telescope.nvim", dependencies = { "nvim-lua/plenary.nvim" } },
 
 	-- LSP Management
