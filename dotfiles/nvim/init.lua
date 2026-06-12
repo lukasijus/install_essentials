@@ -7,11 +7,22 @@ vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.clipboard = "unnamedplus"
 vim.opt.guicursor = {
-	"n-v-c:block-Cursor-blinkon500-blinkoff500",
-	"i-ci-ve:block-iCursor-blinkon500-blinkoff500",
-	"r-cr-o:block-Cursor-blinkon500-blinkoff500",
-	"a:blinkwait700",
+	"n-v-c:block100-Cursor-blinkwait700-blinkon700-blinkoff700",
+	"i-ci-ve:block-iCursor-blinkwait70-blinkon70-blinkoff70",
+	"r-cr-o:hor20-Cursor-blinkwait700-blinkon700-blinkoff700",
 }
+
+local function apply_cursor_highlights()
+	vim.api.nvim_set_hl(0, "Cursor", { fg = "#ffffff", bg = "#d80040" })
+	vim.api.nvim_set_hl(0, "iCursor", { fg = "#ffffff", bg = "#0099DD" })
+	vim.api.nvim_set_hl(0, "lCursor", { fg = "#ffffff", bg = "#0057d8" })
+end
+
+apply_cursor_highlights()
+vim.api.nvim_create_autocmd("ColorScheme", {
+	callback = apply_cursor_highlights,
+})
+
 -----------------------------------------------------------
 -- 2. Plugin Manager (lazy.nvim)
 -----------------------------------------------------------
@@ -32,6 +43,19 @@ vim.filetype.add({
 require("lazy").setup({
 	{ "aklt/plantuml-syntax", ft = { "plantuml" } },
 	{
+		"goropikari/plantuml.nvim",
+		dependencies = {
+			"goropikari/LibDeflate.nvim",
+		},
+		opts = {
+			-- default opts
+			base_url = "https://www.plantuml.com/plantuml",
+			reload_events = { "BufWritePre" },
+			viewer = "xdg-open", -- Image viewer for non-ASCII exports
+			docker_image = "plantuml/plantuml-server:tomcat",
+		},
+	},
+	{
 		"MeanderingProgrammer/render-markdown.nvim",
 		dependencies = { "nvim-treesitter/nvim-treesitter", "nvim-mini/mini.nvim" }, -- if you use the mini.nvim suite
 		-- dependencies = { 'nvim-treesitter/nvim-treesitter', 'nvim-mini/mini.icons' },        -- if you use standalone mini plugins
@@ -40,17 +64,28 @@ require("lazy").setup({
 		---@type render.md.UserConfig
 		opts = {},
 	},
-	-- Oldschool Theme
+	-- cyberdream Theme
 	{
-		"L-Colombo/oldschool.nvim",
+		"scottmckendry/cyberdream.nvim",
 		lazy = false,
 		priority = 1000,
-		opts = {},
+		opts = { theme = "auto", variant = "light" },
 		config = function(_, opts)
-			require("oldschool").setup(opts)
-			vim.cmd.colorscheme("oldschool")
+			require("cyberdream").setup(opts)
+			vim.cmd.colorscheme("cyberdream")
 		end,
 	},
+	-- Oldschool Theme
+	-- {
+	-- 	"L-Colombo/oldschool.nvim",
+	-- 	lazy = false,
+	-- 	priority = 1000,
+	-- 	opts = {},
+	-- 	config = function(_, opts)
+	-- 		require("oldschool").setup(opts)
+	-- 		vim.cmd.colorscheme("oldschool")
+	-- 	end,
+	-- },
 
 	-- Lualine matching Oldschool
 	{
@@ -58,7 +93,7 @@ require("lazy").setup({
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 		opts = {
 			options = {
-				theme = "oldschool",
+				theme = "cyberdream",
 				icons_enabled = true,
 				component_separators = "|",
 				section_separators = "",
@@ -71,17 +106,9 @@ require("lazy").setup({
 	{
 		"nvim-treesitter/nvim-treesitter",
 		build = ":TSUpdate",
-		-- By providing opts and removing the config function,
-		-- we avoid the "module 'nvim-treesitter.configs' not found" crash.
-		opts = {
-			ensure_installed = { "lua", "python", "javascript", "typescript", "vue", "json" },
-			highlight = {
-				enable = true,
-				additional_vim_regex_highlighting = false,
-			},
-			indent = { enable = true },
-		},
+		opts = {},
 	},
+
 	{ "nvim-tree/nvim-tree.lua", opts = { view = { width = 60 } } },
 	{ "nvim-telescope/telescope.nvim", dependencies = { "nvim-lua/plenary.nvim" } },
 
@@ -118,7 +145,12 @@ require("lazy").setup({
 						name = "nvim_lsp",
 						entry_filter = function(entry, ctx)
 							local kind = entry:get_kind()
-							local line = vim.api.nvim_buf_get_lines(ctx.bufnr, ctx.cursor.line - 1, ctx.cursor.line, false)[1] or ""
+							local line = vim.api.nvim_buf_get_lines(
+								ctx.bufnr,
+								ctx.cursor.line - 1,
+								ctx.cursor.line,
+								false
+							)[1] or ""
 							local before_cursor = line:sub(1, ctx.cursor.col)
 
 							-- When typing after "except", only show classes
@@ -205,6 +237,75 @@ require("lazy").setup({
 }, {
 	rocks = { enabled = false },
 })
+
+-----------------------------------------------------------
+-- 2.1 Oldschool Highlight Refinements
+-----------------------------------------------------------
+-- local function apply_oldschool_refinements()
+-- 	local palette = {
+-- 		bg = "#000000",
+-- 		fg = "#d8d8e8",
+-- 		muted = "#8f98a8",
+-- 		green = "#00d084",
+-- 		teal = "#22d3ee",
+-- 		blue = "#7aa2ff",
+-- 		yellow = "#ffd166",
+-- 		orange = "#ff9f43",
+-- 		pink = "#ff6fd8",
+-- 		red = "#ff5c8a",
+-- 	}
+--
+-- 	local highlights = {
+-- 		Normal = { fg = palette.fg, bg = palette.bg },
+-- 		LineNr = { fg = palette.muted },
+-- 		CursorLineNr = { fg = palette.yellow, bold = true },
+--
+-- 		["@keyword"] = { fg = palette.pink, bold = true },
+-- 		["@keyword.import"] = { fg = palette.green, bold = true },
+-- 		["@keyword.return"] = { fg = palette.red, bold = true },
+-- 		["@module"] = { fg = palette.blue },
+-- 		["@type"] = { fg = palette.teal },
+-- 		["@type.builtin"] = { fg = palette.teal, italic = true },
+-- 		["@function"] = { fg = palette.yellow, bold = true },
+-- 		["@function.call"] = { fg = palette.yellow },
+-- 		["@constructor"] = { fg = palette.teal },
+-- 		["@variable"] = { fg = palette.fg },
+-- 		["@variable.builtin"] = { fg = palette.orange, italic = true },
+-- 		["@variable.member"] = { fg = palette.blue },
+-- 		["@variable.parameter"] = { fg = palette.orange },
+-- 		["@constant"] = { fg = palette.orange },
+-- 		["@constant.builtin"] = { fg = palette.orange, bold = true },
+-- 		["@string"] = { fg = palette.green },
+-- 		["@number"] = { fg = palette.orange },
+-- 		["@boolean"] = { fg = palette.orange, bold = true },
+-- 		["@operator"] = { fg = palette.pink },
+-- 		["@punctuation"] = { fg = palette.muted },
+--
+-- 		["@lsp.type.namespace.python"] = { fg = palette.blue },
+-- 		["@lsp.type.class.python"] = { fg = palette.teal, bold = true },
+-- 		["@lsp.type.function.python"] = { fg = palette.yellow },
+-- 		["@lsp.type.method.python"] = { fg = palette.yellow, bold = true },
+-- 		["@lsp.type.variable.python"] = { fg = palette.fg },
+-- 		["@lsp.type.parameter.python"] = { fg = palette.orange },
+-- 	}
+--
+-- 	for group, opts in pairs(highlights) do
+-- 		vim.api.nvim_set_hl(0, group, opts)
+-- 	end
+-- end
+--
+-- vim.api.nvim_create_autocmd("ColorScheme", {
+-- 	pattern = "oldschool",
+-- 	callback = apply_oldschool_refinements,
+-- })
+-- apply_oldschool_refinements()
+--
+-- vim.api.nvim_create_autocmd("FileType", {
+-- 	pattern = { "lua", "python", "javascript", "typescript", "vue", "json" },
+-- 	callback = function()
+-- 		pcall(vim.treesitter.start)
+-- 	end,
+-- })
 
 -----------------------------------------------------------
 -- 3. Native LSP Configuration (Neovim 0.11 API)
