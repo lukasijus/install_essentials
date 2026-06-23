@@ -41,6 +41,13 @@ vim.filetype.add({
 })
 
 require("lazy").setup({
+	{
+		"echasnovski/mini.pairs",
+		version = false,
+		config = function()
+			require("mini.pairs").setup()
+		end,
+	},
 	{ "aklt/plantuml-syntax", ft = { "plantuml" } },
 	{
 		"goropikari/plantuml.nvim",
@@ -215,6 +222,8 @@ require("lazy").setup({
 		"stevearc/conform.nvim",
 		opts = {
 			formatters_by_ft = {
+				c = { "clang_format" },
+				cpp = { "clang_format" },
 				python = { "black" },
 				lua = { "stylua" },
 				javascript = { "prettierd" },
@@ -398,7 +407,12 @@ vim.lsp.config("eslint", {
 	capabilities = capabilities,
 	filetypes = { "javascript", "javascriptreact", "typescript", "typescriptreact", "vue" },
 })
-vim.lsp.enable({ "pyright", "lua_ls", "vue_ls", "ts_ls", "eslint" })
+
+vim.lsp.config("clangd", {
+	capabilities = capabilities,
+})
+
+vim.lsp.enable({ "pyright", "lua_ls", "vue_ls", "ts_ls", "eslint", "clangd" })
 
 -----------------------------------------------------------
 -- 4. Keymaps & Diagnostics
@@ -429,10 +443,49 @@ vim.api.nvim_create_autocmd("LspAttach", {
 
 vim.diagnostic.config({ virtual_text = false, underline = true, severity_sort = true })
 vim.api.nvim_create_autocmd("FileType", {
-	pattern = { "python", "lua", "vue", "javascript", "javascriptreact", "typescript", "typescriptreact" },
+	pattern = { "c", "cpp", "python", "lua", "vue", "javascript", "javascriptreact", "typescript", "typescriptreact" },
 	callback = function(args)
 		pcall(vim.treesitter.start, args.buf)
 	end,
+})
+
+local function insert_header()
+	local comment_map = {
+		python = "#",
+		sh = "#",
+		lua = "--",
+		javascript = "//",
+		typescript = "//",
+		c = "//",
+		cpp = "//",
+		java = "//",
+		rust = "//",
+		go = "//",
+	}
+
+	local ft = vim.bo.filetype
+	local comment = comment_map[ft] or "#"
+
+	local date = os.date("%Y-%m-%d %H:%M:%S")
+
+	local lines = {
+		comment .. " ===============================================================================",
+		comment .. " File Creator : Lukas Rimkus",
+		comment .. " File Created : " .. date,
+		comment .. " ===============================================================================",
+		"",
+	}
+
+	vim.api.nvim_buf_set_lines(0, 0, 0, false, lines)
+end
+
+vim.keymap.set("n", "<leader>fh", insert_header, {
+	desc = "Insert file header",
+})
+
+vim.api.nvim_create_autocmd("BufNewFile", {
+	pattern = "*.py",
+	callback = insert_header,
 })
 -- Buffer navigation
 vim.keymap.set("n", "<Tab>", ":bnext<CR>", { desc = "Next buffer" })

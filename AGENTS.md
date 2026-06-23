@@ -13,6 +13,7 @@ Before finishing code edits, follow the same formatting rules configured there:
 - JavaScript: `prettierd`
 - TypeScript: `prettierd`
 - Vue: `prettierd`
+- C/C++: `clang-format`
 
 Neovim formats on save through `conform.nvim` with LSP fallback enabled. When
 editing from the terminal, run the matching formatter directly on changed files

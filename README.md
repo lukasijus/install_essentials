@@ -12,7 +12,8 @@ images, and ordinary cloud Linux machines:
 - OpenAI Codex CLI via the global `@openai/codex` npm package
 - Python tooling via `uv`
 - common CLI tools: `git`, `gh`, `curl`, `ripgrep`, `fd`, compilers, clipboard helpers
-- formatters used by Neovim: `black`, `stylua`, `shfmt`, `prettierd`
+- formatters used by Neovim: `black`, `stylua`, `shfmt`, `clang-format`,
+  `prettierd`
 
 This repo intentionally does not include Aider wrappers, `.env` files, API keys,
 Shopify credentials, project-specific service files, or private path shortcuts
@@ -37,6 +38,7 @@ up once with a timestamp before the managed files are installed.
 - `~/.inputrc`
 - `~/.tmux.conf`
 - `~/.config/nvim/init.lua`
+- `~/.clang-format`
 - `~/AGENTS.md`
 - `~/bin/config_nvim`
 - `~/bin/nvim_src`

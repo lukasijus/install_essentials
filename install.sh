@@ -180,12 +180,17 @@ configure_terminal_font() {
 install_formatters() {
   log "Installing editor formatters"
   uv tool install black || true
+  uv tool install clang-format || true
   if have apt-get; then
     "${sudo_cmd[@]}" apt-get install -y stylua || true
+    "${sudo_cmd[@]}" apt-get install -y clang-format clangd || warn "Could not install C/C++ tools from apt."
     "${sudo_cmd[@]}" apt-get install -y shfmt shellcheck || warn "Could not install shell formatters from apt."
   elif have dnf; then
     "${sudo_cmd[@]}" dnf install -y stylua || true
+    "${sudo_cmd[@]}" dnf install -y clang-tools-extra clangd || warn "Could not install C/C++ tools from dnf."
     "${sudo_cmd[@]}" dnf install -y shfmt ShellCheck || warn "Could not install shell formatters from dnf."
+  elif have yum; then
+    "${sudo_cmd[@]}" yum install -y clang-tools-extra clangd || warn "Could not install C/C++ tools from yum."
   fi
   if ! have stylua && have cargo; then
     cargo install stylua || true
@@ -199,6 +204,7 @@ install_dotfiles() {
   backup_and_install "$repo_dir/dotfiles/inputrc" "$HOME/.inputrc"
   backup_and_install "$repo_dir/dotfiles/tmux.conf" "$HOME/.tmux.conf"
   backup_and_install "$repo_dir/dotfiles/nvim/init.lua" "$HOME/.config/nvim/init.lua"
+  backup_and_install "$repo_dir/.clang-format" "$HOME/.clang-format"
   backup_and_install "$repo_dir/AGENTS.md" "$HOME/AGENTS.md"
 
   mkdir -p "$HOME/bin"
@@ -216,7 +222,7 @@ bootstrap_neovim() {
   if have nvim; then
     log "Bootstrapping Neovim plugins"
     nvim --headless "+Lazy! sync" +qa || true
-    nvim --headless "+MasonInstall pyright typescript-language-server vue-language-server eslint-lsp stylua shfmt shellcheck" +qa || true
+    nvim --headless "+MasonInstall pyright typescript-language-server vue-language-server eslint-lsp clangd stylua shfmt shellcheck" +qa || true
     nvim --headless "+TSUpdate" +qa || true
   else
     warn "nvim is not available on PATH yet; open a new shell and run :Lazy sync."
